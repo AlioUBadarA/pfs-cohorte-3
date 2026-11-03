@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PFS Cohort 3 Impact Dashboard</title>
+  <meta name="description" content="PFS Sales Training, Cohort 3: before and after results by phase, module and country.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-text">
+      <h1 id="ttl">PFS Sales Training · Cohort 3 Impact Dashboard</h1>
+      <p class="sub" id="sub">Partners in Food Solutions × Oo2 Formations &amp; Consulting</p>
+      <p class="updated" id="updated">Loading…</p>
+    </div>
+    <div class="logos">
+      <img src="assets/logo-pfs.png" alt="Partners in Food Solutions" width="277" height="96">
+      <img src="assets/logo-oo2.png" alt="Oo2 Formations &amp; Consulting" width="288" height="96">
+    </div>
+  </header>
+  <div class="strip" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+  <nav class="filters" id="filters" aria-label="Filters">
+    <label for="f-phase" id="l-phase">Phase <b>▸</b></label>
+    <select id="f-phase"></select>
+    <label for="f-module" id="l-module">Module <b>▸</b></label>
+    <select id="f-module"></select>
+    <label for="f-country" id="l-country">Country <b>▸</b></label>
+    <select id="f-country"></select>
+    <p class="scope" id="scope"></p>
+    <div class="lang" role="group" aria-label="Language / Langue">
+      <button type="button" id="lang-en" aria-pressed="true">EN</button>
+      <button type="button" id="lang-fr" aria-pressed="false">FR</button>
+    </div>
+  </nav>
+
+  <main id="app" aria-live="polite"></main>
+
+  <script src="assets/chart.umd.js"></script>
+  <script src="assets/config.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
