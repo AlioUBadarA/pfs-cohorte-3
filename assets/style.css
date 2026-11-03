@@ -130,8 +130,13 @@ main { max-width: 1120px; margin: 0 auto; padding: 16px 16px 40px; }
   border-radius: 0 10px 10px 0;
   background: var(--guide-bg);
   border-left: 5px solid var(--oo2-yellow);
-  font-size: 12.5px;
+  font-size: 13px;
 }
+.guide h2 { margin: 0 0 6px; font-size: 13px; font-weight: 700; letter-spacing: .04em; color: #8A6A12; }
+.guide ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; }
+.guide li { padding-left: 14px; position: relative; }
+.guide li::before { content: ''; position: absolute; left: 0; top: .6em; width: 6px; height: 6px; border-radius: 50%; background: var(--oo2-yellow); }
+.guide strong { color: var(--text); }
 
 /* Sections */
 .section { margin-top: 28px; }

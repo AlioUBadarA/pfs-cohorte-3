@@ -356,15 +356,7 @@
       tr(' forms after (latest answer per person)', ' formulaires après (dernière réponse par personne)');
 
     frag.appendChild(cards(d));
-    frag.appendChild(el('p', { class: 'guide', text: tr(
-      'HOW TO READ   Before = 12-question test taken once, before the training starts.   After = form taken once, at the end of the training ' +
-      '(same 12 questions plus the training evaluation).   Each person is counted once per phase (latest answer).   ' +
-      'Same people = answered before and after.   Green = improvement, red = decline.   ' +
-      'Use the two filters above: the whole page recalculates.',
-      'COMMENT LIRE   Avant = test de 12 questions rempli une fois, avant le début de la formation.   Après = formulaire rempli une fois, à la fin de la formation ' +
-      '(les mêmes 12 questions plus l\'évaluation de la formation).   Chaque personne est comptée une fois par phase (dernière réponse).   ' +
-      'Mêmes personnes = ont répondu avant et après.   Vert = progression, rouge = recul.   ' +
-      'Utilisez les deux filtres ci-dessus : toute la page se recalcule.') }));
+    frag.appendChild(guide());
 
     var empty = (showBefore() && d.before.n === 0 && (!showAfter() || d.after.n === 0)) || (!showBefore() && d.after.n === 0);
     if (empty) {
@@ -387,6 +379,24 @@
     app.replaceChildren(frag);
     pending.forEach(function (p) { drawChart(p.canvas, p.spec); });
     pending = [];
+  }
+
+  /** "How to read" box: a title and one short line per idea. */
+  function guide() {
+    var items = [
+      [tr('Before', 'Avant'), tr('12-question test, taken once, before the training starts.', 'Test de 12 questions, rempli une fois, avant le début de la formation.')],
+      [tr('After', 'Après'), tr('Form taken once, at the end of the training: the same 12 questions plus the training evaluation.', 'Formulaire rempli une fois, à la fin de la formation : les mêmes 12 questions plus l\'évaluation de la formation.')],
+      [tr('Counting', 'Comptage'), tr('Each person is counted once per phase (latest answer).', 'Chaque personne est comptée une fois par phase (dernière réponse).')],
+      [tr('Same people', 'Mêmes personnes'), tr('People who answered both before and after: the most reliable comparison.', 'Personnes ayant répondu avant et après : la comparaison la plus fiable.')],
+      [tr('Colours', 'Couleurs'), tr('Green = improvement, red = decline.', 'Vert = progression, rouge = recul.')],
+      [tr('Filters', 'Filtres'), tr('Use the two filters above (phase and country): the whole page recalculates.', 'Utilisez les deux filtres ci-dessus (phase et pays) : toute la page se recalcule.')]
+    ];
+    return el('div', { class: 'guide' }, [
+      el('h2', { text: tr('HOW TO READ THIS DASHBOARD', 'COMMENT LIRE CE TABLEAU DE BORD') }),
+      el('ul', {}, items.map(function (it) {
+        return el('li', {}, [el('strong', { text: it[0] + tr(': ', ' : ') }), el('span', { text: it[1] })]);
+      }))
+    ]);
   }
 
   function phaseLabel() {
