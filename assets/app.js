@@ -1,26 +1,24 @@
 /* PFS Cohort 3 dashboard.
  * The page holds no data: every visit asks the Apps Script web app for aggregated figures
- * (module + country). The phase filter (before / after / both) is applied here.
- * Shareable links: ?phase=both&module=S1&country=Senegal&lang=fr (lang = en or fr) */
+ * (country). The phase filter (before / after / both) is applied here.
+ * Shareable links: ?phase=both&country=Senegal&lang=fr (lang = en or fr) */
 (function () {
   'use strict';
 
   var COLORS = { blue: '#2A6AA3', green: '#5DB246', yellow: '#E3B23C', red: '#C22A3A', oo2Blue: '#3A6AB2',
     text: '#1F2A37', soft: '#5B6775', grid: '#E5EAF0' };
   var PHASES = [
-    { id: 'both', en: 'Before and after', fr: 'Avant et après' },
+    { id: 'both', en: 'Before vs after (comparison)', fr: 'Avant / après (comparaison)' },
     { id: 'pre', en: 'Before only', fr: 'Avant seulement' },
     { id: 'post', en: 'After only', fr: 'Après seulement' }
   ];
   var ALL_COUNTRIES = 'All countries';   // valeur technique envoyee a l'API, jamais traduite
-  var ALL_SESSIONS = 'ALL';
   var CACHE_MS = 5 * 60 * 1000;
 
   var API_URL = (window.PFS_CONFIG && window.PFS_CONFIG.API_URL) || '';
   var app = document.getElementById('app');
   var els = {
     phase: document.getElementById('f-phase'),
-    module: document.getElementById('f-module'),
     country: document.getElementById('f-country'),
     scope: document.getElementById('scope'),
     updated: document.getElementById('updated'),
@@ -48,7 +46,7 @@
   var data = null;
 
   if (window.Chart) {
-    Chart.defaults.font.family = 'Arial, Helvetica, sans-serif';
+    Chart.defaults.font.family = "'Poppins', 'Segoe UI', Arial, sans-serif";
     Chart.defaults.color = COLORS.text;
   }
 
@@ -83,7 +81,6 @@
     var phase = p.get('phase');
     return {
       phase: PHASES.some(function (x) { return x.id === phase; }) ? phase : 'both',
-      module: p.get('module') || ALL_SESSIONS,
       country: p.get('country') || ALL_COUNTRIES
     };
   }
@@ -91,7 +88,6 @@
   function writeUrl() {
     var p = new URLSearchParams();
     if (state.phase !== 'both') p.set('phase', state.phase);
-    if (state.module !== ALL_SESSIONS) p.set('module', state.module);
     if (state.country !== ALL_COUNTRIES) p.set('country', state.country);
     if (LANG === 'fr') p.set('lang', 'fr');
     var q = p.toString();
@@ -104,7 +100,7 @@
   /* ---------------- data ---------------- */
 
   function load() {
-    var key = state.module + '|' + state.country;
+    var key = state.country;
     var hit = cache[key];
     if (hit && Date.now() - hit.at < CACHE_MS) return Promise.resolve(hit.data);
 
@@ -112,7 +108,7 @@
       return Promise.reject(new Error(tr('The data source is not set yet. Put the web app URL in assets/config.js.', 'La source de données n\'est pas encore configurée. Collez l\'URL de l\'application web dans assets/config.js.')));
     }
     var sep = API_URL.indexOf('?') > -1 ? '&' : '?';
-    var url = API_URL + sep + 'module=' + encodeURIComponent(state.module) + '&country=' + encodeURIComponent(state.country);
+    var url = API_URL + sep + 'country=' + encodeURIComponent(state.country);
     return fetch(url).then(function (r) {
       if (!r.ok) throw new Error(tr('The data source answered with an error (', 'La source de données a répondu par une erreur (') + r.status + ').');
       return r.json();
@@ -158,20 +154,16 @@
 
   function buildFilterOptions(d) {
     fillSelect(els.phase, PHASES.map(function (p) { return { value: p.id, label: tr(p.en, p.fr) }; }), state.phase);
-    fillSelect(els.module, [{ value: ALL_SESSIONS, label: tr('All modules', 'Tous les modules') }].concat(
-      d.filter.modules.map(function (s) { return { value: s.id, label: L(s) }; })), state.module);
     fillSelect(els.country, [{ value: ALL_COUNTRIES, label: tr('All countries', 'Tous les pays') }].concat(
       d.filter.countries.map(function (c) { return { value: c, label: countryName(c) }; })), state.country);
   }
 
   function syncSelects() {
     if (els.phase.options.length) els.phase.value = state.phase;
-    if (els.module.options.length) els.module.value = state.module;
     if (els.country.options.length) els.country.value = state.country;
   }
 
   els.phase.addEventListener('change', function () { state.phase = els.phase.value; writeUrl(); if (data) render(); });
-  els.module.addEventListener('change', function () { state.module = els.module.value; refresh(); });
   els.country.addEventListener('change', function () { state.country = els.country.value; refresh(); });
 
   // Phase list and static texts are available before the first load.
@@ -190,7 +182,6 @@
     document.getElementById('ttl').textContent = tr('PFS Sales Training · Cohort 3 Impact Dashboard', 'PFS Formation commerciale · Cohorte 3 : tableau de bord d\'impact');
     document.getElementById('sub').textContent = tr('Partners in Food Solutions × Oo2 Formations & Consulting', 'Partners in Food Solutions × Oo2 Formations & Consulting');
     document.getElementById('l-phase').firstChild.textContent = tr('Phase ', 'Phase ');
-    document.getElementById('l-module').firstChild.textContent = tr('Module ', 'Module ');
     document.getElementById('l-country').firstChild.textContent = tr('Country ', 'Pays ');
     document.getElementById('filters').setAttribute('aria-label', tr('Filters', 'Filtres'));
     els.langEn.setAttribute('aria-pressed', LANG === 'en');
@@ -359,7 +350,7 @@
     var frag = document.createDocumentFragment();
 
     els.updated.textContent = d.updated ? tr('Updated: ', 'Mis à jour : ') + formatDate(d.updated) : '';
-    els.scope.textContent = tr('Showing: ', 'Affichage : ') + phaseLabel() + ' · ' + moduleLabel(d) + ' · ' +
+    els.scope.textContent = tr('Showing: ', 'Affichage : ') + phaseLabel() + ' · ' +
       (state.country === ALL_COUNTRIES ? tr('All countries', 'Tous les pays') : countryName(state.country)) + ' · ' +
       d.people + tr(' people, ', ' personnes, ') + d.before.n + tr(' tests before, ', ' tests avant, ') + d.after.n +
       tr(' forms after (latest answer per person)', ' formulaires après (dernière réponse par personne)');
@@ -368,12 +359,12 @@
     frag.appendChild(el('p', { class: 'guide', text: tr(
       'HOW TO READ   Before = 12-question test taken once, before the training starts.   After = form taken once, at the end of the training ' +
       '(same 12 questions plus the training evaluation).   Each person is counted once per phase (latest answer).   ' +
-      'Same people = answered before and after.   Module = the 3 questions taught in one session.   Green = improvement, red = decline.   ' +
-      'Use the three filters above: the whole page recalculates.',
+      'Same people = answered before and after.   Green = improvement, red = decline.   ' +
+      'Use the two filters above: the whole page recalculates.',
       'COMMENT LIRE   Avant = test de 12 questions rempli une fois, avant le début de la formation.   Après = formulaire rempli une fois, à la fin de la formation ' +
       '(les mêmes 12 questions plus l\'évaluation de la formation).   Chaque personne est comptée une fois par phase (dernière réponse).   ' +
-      'Mêmes personnes = ont répondu avant et après.   Module = les 3 questions enseignées lors d\'une séance.   Vert = progression, rouge = recul.   ' +
-      'Utilisez les trois filtres ci-dessus : toute la page se recalcule.') }));
+      'Mêmes personnes = ont répondu avant et après.   Vert = progression, rouge = recul.   ' +
+      'Utilisez les deux filtres ci-dessus : toute la page se recalcule.') }));
 
     var empty = (showBefore() && d.before.n === 0 && (!showAfter() || d.after.n === 0)) || (!showBefore() && d.after.n === 0);
     if (empty) {
@@ -401,12 +392,6 @@
   function phaseLabel() {
     var p = PHASES.filter(function (x) { return x.id === state.phase; })[0];
     return tr(p.en, p.fr);
-  }
-
-  function moduleLabel(d) {
-    if (state.module === ALL_SESSIONS) return tr('All modules', 'Tous les modules');
-    var s = d.filter.modules.filter(function (x) { return x.id === state.module; })[0];
-    return s ? L(s) : state.module;
   }
 
   function formatDate(iso) {
@@ -499,7 +484,7 @@
   /* 2. Knowledge results */
   function knowledgeSection(d, n) {
     var sec = section(n + tr('. Knowledge results', '. Résultats de connaissances'),
-      tr('Overall success rate for the selected module and country.', 'Taux de réussite global pour le module et le pays choisis.'));
+      tr('Overall success rate for the selected country.', 'Taux de réussite global pour le pays choisi.'));
     var cols = [tr('Indicator', 'Indicateur')];
     if (showBefore()) cols.push(tr('Before', 'Avant'));
     if (showAfter()) cols.push(tr('After', 'Après'));
@@ -541,7 +526,7 @@
     if (showAfter()) cols.push(tr('n after', 'n après'));
 
     var rows = d.questions.map(function (q) {
-      var cells = [L(q) + ' (M' + q.module.slice(1) + ')'];
+      var cells = [L(q)];
       if (showBefore()) cells.push(pct(q.before.rate));
       if (showAfter()) cells.push(pct(q.after.rate));
       if (state.phase === 'both') cells.push(change(q.before.rate, q.after.rate));
@@ -562,8 +547,8 @@
   /* 4. Country representation */
   function countrySection(d, n) {
     var sec = section(n + tr('. Country representation', '. Représentation par pays'),
-      tr('Calculated for the selected module, across all countries. Companies are counted from the name typed in the form.',
-         'Calculé pour le module choisi, tous pays confondus. Les entreprises sont comptées d\'après le nom saisi dans le formulaire.'));
+      tr('Calculated across all countries. Companies are counted from the name typed in the form.',
+         'Calculé tous pays confondus. Les entreprises sont comptées d\'après le nom saisi dans le formulaire.'));
     var cols = [tr('Country', 'Pays'), tr('Companies', 'Entreprises')];
     if (showBefore()) cols.push(tr('Tests before', 'Tests avant'));
     if (showAfter()) cols.push(tr('Forms after', 'Formulaires après'));
