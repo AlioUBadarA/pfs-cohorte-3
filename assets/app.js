@@ -384,10 +384,9 @@
 
     var n = 1;
     if (showAfter()) frag.appendChild(evaluationSection(d, n++));
-    frag.appendChild(moduleSection(d, n++));
+    frag.appendChild(countrySection(d, n++));
     frag.appendChild(knowledgeSection(d, n++));
     frag.appendChild(questionSection(d, n++));
-    frag.appendChild(countrySection(d, n++));
     frag.appendChild(el('footer', { class: 'src', text: tr(
       'Source: test before and form after the PFS Sales Training, Cohort 3 (4 online sessions of 2 hours). Generated automatically from the response sheet. ' +
       'Only aggregated figures are published: no participant name, phone number or free-text answer.',
@@ -497,36 +496,7 @@
     }));
   }
 
-  /* 2. Results by module */
-  function moduleSection(d, n) {
-    var sec = section(n + tr('. Results by module', '. Résultats par module'),
-      tr('Success rate = share of correct answers on the 3 questions of each module (one module per session). The test before and the form after use the same questions, so the two can be compared directly.',
-         'Taux de réussite = part de bonnes réponses aux 3 questions de chaque module (un module par séance). Le test avant et le formulaire après utilisent les mêmes questions : ils sont directement comparables.'));
-    var cols = [tr('Module', 'Module'), tr('Taught on', 'Enseigné le')];
-    if (showBefore()) cols.push(tr('Tests before', 'Tests avant'));
-    if (showAfter()) cols.push(tr('Forms after', 'Formulaires après'));
-    if (showBefore()) cols.push(tr('Success before', 'Réussite avant'));
-    if (showAfter()) cols.push(tr('Success after', 'Réussite après'));
-    if (state.phase === 'both') cols.push(tr('Change', 'Évolution'));
-
-    var rows = d.byModule.map(function (s) {
-      var cells = [L(s, 'label') + ' · ' + L(s, 'theme'), L(s, 'date')];
-      if (showBefore()) cells.push(num(s.before.n));
-      if (showAfter()) cells.push(num(s.after.n));
-      if (showBefore()) cells.push(pct(s.before.rate));
-      if (showAfter()) cells.push(pct(s.after.rate));
-      if (state.phase === 'both') cells.push(change(s.before.rate, s.after.rate));
-      return { cells: cells, style: s.id === state.module ? 'selection' : '' };
-    });
-    sec.appendChild(block(null, table(tr('Results by module', 'Résultats par module'), cols, rows), {
-      title: tr('Success rate by module', 'Taux de réussite par module') + (state.phase === 'both' ? tr(': before vs after', ' : avant et après') : ''),
-      labels: d.byModule.map(function (s) { return 'M' + s.id.slice(1) + ' · ' + L(s, 'date'); }), format: 'pct',
-      datasets: phaseDatasets(d.byModule.map(function (s) { return s.before.rate; }), d.byModule.map(function (s) { return s.after.rate; }))
-    }, tr('Calculated for the selected country. The selected module is highlighted.', 'Calculé pour le pays choisi. Le module choisi est surligné.')));
-    return sec;
-  }
-
-  /* 3. Knowledge results */
+  /* 2. Knowledge results */
   function knowledgeSection(d, n) {
     var sec = section(n + tr('. Knowledge results', '. Résultats de connaissances'),
       tr('Overall success rate for the selected module and country.', 'Taux de réussite global pour le module et le pays choisis.'));
@@ -559,7 +529,7 @@
     return sec;
   }
 
-  /* 4. Success by question */
+  /* 3. Success by question */
   function questionSection(d, n) {
     var sec = section(n + tr('. Success by question', '. Réussite par question'),
       tr('Share of people who chose the correct answer, question by question.', 'Part des personnes qui ont choisi la bonne réponse, question par question.'));
@@ -589,7 +559,7 @@
     return sec;
   }
 
-  /* 5. Country representation */
+  /* 4. Country representation */
   function countrySection(d, n) {
     var sec = section(n + tr('. Country representation', '. Représentation par pays'),
       tr('Calculated for the selected module, across all countries. Companies are counted from the name typed in the form.',
